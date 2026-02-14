@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Műveletek Törtekkel - Interaktív Tananyag</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #C1E1C1 0%, #D4EDDA 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #A8D5BA 0%, #C1E1C1 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            height: 8px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: #4CAF50;
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+            min-height: 500px;
+        }
+        
+        .chapter {
+            display: none;
+        }
+        
+        .chapter.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .chapter-title {
+            color: #7CB992;
+            font-size: 2em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .chapter-number {
+            background: #7CB992;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+            margin: 0 3px;
+        }
+        
+        .fraction .num {
+            display: block;
+            border-bottom: 2px solid #333;
+            padding-bottom: 2px;
+            font-weight: bold;
+        }
+        
+        .fraction .den {
+            display: block;
+            padding-top: 2px;
+            font-weight: bold;
+        }
+        
+        .quiz {
+            display: none;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .quiz.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .quiz-title {
+            color: #e67e22;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .question {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .option {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .option:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .option.selected {
+            background: #7CB992;
+            color: white;
+            border-color: #7CB992;
+        }
+        
+        .option.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .option.incorrect {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+        
+        .quiz-result {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .quiz-result.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+        
+        .score.excellent {
+            color: #7CB992;
+        }
+        
+        .score.good {
+            color: #2196F3;
+        }
+        
+        .score.average {
+            color: #FF9800;
+        }
+        
+        .score.poor {
+            color: #f44336;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn-prev {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-next {
+            background: #7CB992;
+            color: white;
+        }
+        
+        .btn-restart {
+            background: #A8D5BA;
+            color: white;
+        }
+        
+        .btn-submit {
+            background: #e67e22;
+            color: white;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .content-section {
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+        
+        .content-section h3 {
+            color: #7CB992;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .example-box {
+            background: #fff9e6;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #f39c12;
+            margin: 15px 0;
+        }
+        
+        .tip-box {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+            margin: 15px 0;
+        }
+        
+        .tip-box::before {
+            content: "💡 TIPP: ";
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .visual {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .pizza-slice {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            margin: 5px;
+            border-radius: 50%;
+        }
+        
+        .pizza-slice.filled {
+            background: #e74c3c;
+        }
+        
+        .pizza-slice.empty {
+            background: #ecf0f1;
+            border: 2px solid #bdc3c7;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 Műveletek Törtekkel</h1>
+            <p>Interaktív tananyag fejezetekkel és tesztekkel</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <div class="content" id="content">
+            <!-- Fejezetek itt jelennek meg dinamikusan -->
+        </div>
+        
+        <div class="navigation">
+            <button class="btn btn-prev" id="prevBtn" onclick="previousPage()">← Előző</button>
+            <button class="btn btn-restart" id="restartBtn" onclick="restartCourse()" style="display: none;">🔄 Újrakezd</button>
+            <button class="btn btn-next" id="nextBtn" onclick="nextPage()">Következő →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 0;
+        let quizAnswers = {};
+        
+        const chapters = [
+            {
+                number: "5.1",
+                title: "Törtek ismétlése",
+                content: `
+                    <div class="content-section">
+                        <h3>📊 Mi az a tört?</h3>
+                        <p>A tört két egész szám hányadosát jelenti. Azt mutatja meg, hogy <strong>egy egésznek hány részét</strong> vesszük.</p>
+                        
+                        <div class="example-box">
+                            <p style="font-size: 1.2em; text-align: center; margin: 20px 0;">
+                                <span class="fraction">
+                                    <span class="num" style="color: #e74c3c;">2</span>
+                                    <span class="den" style="color: #3498db;">5</span>
+                                </span>
+                            </p>
+                            <p style="text-align: center;">
+                                ↑ <span style="color: #e74c3c; font-weight: bold;">Számláló</span> - hány részt veszünk<br>
+                                ↓ <span style="color: #3498db; font-weight: bold;">Nevező</span> - hány részre osztottuk az egészet
+                            </p>
+                        </div>
+                        
+                        <div class="visual">
+                            <p><strong>Vizuális példa: <span class="fraction"><span class="num">2</span><span class="den">5</span></span></strong></p>
+                            <div style="margin: 20px 0;">
+                                <span class="pizza-slice filled"></span>
+                                <span class="pizza-slice filled"></span>
+                                <span class="pizza-slice empty"></span>
+                                <span class="pizza-slice empty"></span>
+                                <span class="pizza-slice empty"></span>
+                            </div>
+                            <p style="color: #666;">5 részből 2-t vettünk (piros színnel jelölve)</p>
+                        </div>
+                        
+                        <div class="tip-box">
+                            A nevező mutatja, hogy hány egyenlő részre osztottuk az egészet. A számláló mutatja, hogy ebből hányat veszünk.
+                        </div>
+                    </div>
+                `,
+                quiz: [
+                    {
+                        question: "Mi a nevező szerepe a törtben?",
+                        options: ["Megmutatja, hány részre osztottuk az egészet", "Megmutatja, hány részt veszünk", "A tört nagyságát adja meg", "Nincs jelentősége"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mi a számláló szerepe a törtben?",
+                        options: ["Megmutatja, hány részre osztottuk az egészet", "Megmutatja, hány részt veszünk", "Mindig kisebb a nevezőnél", "Mindig 1"],
+                        correct: 1
+                    },
+                    {
+                        question: "A <span class='fraction'><span class='num'>3</span><span class='den'>4</span></span> törtben mi a számláló?",
+                        options: ["4", "3", "7", "1"],
+                        correct: 1
+                    },
+                    {
+                        question: "A <span class='fraction'><span class='num'>5</span><span class='den'>8</span></span> törtben mi a nevező?",
+                        options: ["5", "3", "8", "13"],
+                        correct: 2
+                    },
+                    {
+                        question: "Ha egy tortát 6 részre vágunk és veszünk 2-t, milyen törtet kapunk?",
+                        options: ["<span class='fraction'><span class='num'>6</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>4</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>4</span></span>"],
+                        correct: 1
+                    },
+                    {
+                        question: "Melyik rész van felül a törtben?",
+                        options: ["Nevező", "Számláló", "Osztójel", "Szorzó"],
+                        correct: 1
+                    },
+                    {
+                        question: "Melyik rész van alul a törtben?",
+                        options: ["Nevező", "Számláló", "Osztójel", "Szorzó"],
+                        correct: 0
+                    },
+                    {
+                        question: "A <span class='fraction'><span class='num'>7</span><span class='den'>10</span></span> azt jelenti, hogy 10 részből hányat veszünk?",
+                        options: ["10", "7", "3", "17"],
+                        correct: 1
+                    },
+                    {
+                        question: "Ha 8 részre osztunk egy csokit és veszünk 3-at, mi lesz a számláló?",
+                        options: ["8", "3", "5", "11"],
+                        correct: 1
+                    },
+                    {
+                        question: "Igaz-e, hogy a nevező mindig pozitív egész szám?",
+                        options: ["Igen", "Nem", "Csak néha", "Sosem"],
+                        correct: 0
+                    }
+                ]
+            },
+            {
+                number: "5.2",
+                title: "Egyenlő törtek",
+                content: `
+                    <div class="content-section">
+                        <h3>🔄 Bővítés és egyszerűsítés</h3>
+                        <p>Ugyanazt a törtet sokféleképpen felírhatjuk. Ezek mind <strong>egyenlő törtek</strong>.</p>
+                        
+                        <div class="example-box">
+                            <h4 style="color: #e67e22; margin-bottom: 15px;">🔼 BŐVÍTÉS</h4>
+                            <p><strong>Szabály:</strong> Mindkét számot (számláló ÉS nevező) ugyanazzal szorozzuk.</p>
+                            <p style="text-align: center; font-size: 1.3em; margin: 20px 0;">
+                                <span class="fraction"><span class="num">2</span><span class="den">3</span></span>
+                                = 
+                                <span class="fraction"><span class="num">4</span><span class="den">6</span></span>
+                                (×2 bővítés)
+                            </p>
+                        </div>
+                        
+                        <div class="example-box">
+                            <h4 style="color: #e67e22; margin-bottom: 15px;">🔽 EGYSZERŰSÍTÉS</h4>
+                            <p><strong>Szabály:</strong> Mindkét számot ugyanazzal osztjuk.</p>
+                            <p style="text-align: center; font-size: 1.3em; margin: 20px 0;">
+                                <span class="fraction"><span class="num">6</span><span class="den">8</span></span>
+                                = 
+                                <span class="fraction"><span class="num">3</span><span class="den">4</span></span>
+                                (÷2 egyszerűsítés)
+                            </p>
+                        </div>
+                        
+                        <div class="tip-box">
+                            FONTOS: Mindig ugyanazzal a számmal kell szoroznod/osztanod! Ha a számlálót 2-vel szorozzuk, a nevezőt is 2-vel kell!
+                        </div>
+                    </div>
+                `,
+                quiz: [
+                    {
+                        question: "Mit jelent a bővítés?",
+                        options: ["Mindkét számot ugyanazzal szorozzuk", "Csak a számlálót szorozzuk", "Csak a nevezőt szorozzuk", "Összeadjuk őket"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mit jelent az egyszerűsítés?",
+                        options: ["Mindkét számot ugyanazzal osztjuk", "Csak a számlálót osztjuk", "Csak a nevezőt osztjuk", "Kivonjuk őket"],
+                        correct: 0
+                    },
+                    {
+                        question: "Ha a <span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>-t 3-mal bővítjük, mit kapunk?",
+                        options: ["<span class='fraction'><span class='num'>3</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>3</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>4</span><span class='den'>5</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "A <span class='fraction'><span class='num'>10</span><span class='den'>15</span></span> egyszerűsíthető 5-tel. Mit kapunk?",
+                        options: ["<span class='fraction'><span class='num'>5</span><span class='den'>10</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>3</span></span>", "<span class='fraction'><span class='num'>10</span><span class='den'>3</span></span>", "<span class='fraction'><span class='num'>5</span><span class='den'>5</span></span>"],
+                        correct: 1
+                    },
+                    {
+                        question: "Egyenlő-e a <span class='fraction'><span class='num'>2</span><span class='den'>4</span></span> és a <span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>?",
+                        options: ["Igen", "Nem", "Csak néha", "Sosem"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mi a legnagyobb közös osztója a 6-nak és 8-nak?",
+                        options: ["1", "2", "3", "4"],
+                        correct: 1
+                    },
+                    {
+                        question: "Ha a <span class='fraction'><span class='num'>3</span><span class='den'>5</span></span>-t 2-vel bővítjük, mi lesz a nevező?",
+                        options: ["5", "7", "10", "6"],
+                        correct: 2
+                    },
+                    {
+                        question: "A <span class='fraction'><span class='num'>4</span><span class='den'>12</span></span> egyszerűsített alakja:",
+                        options: ["<span class='fraction'><span class='num'>2</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>3</span></span>", "<span class='fraction'><span class='num'>4</span><span class='den'>3</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>3</span></span>"],
+                        correct: 1
+                    },
+                    {
+                        question: "Hányszorozzuk a <span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>-t, hogy <span class='fraction'><span class='num'>5</span><span class='den'>20</span></span>-t kapjunk?",
+                        options: ["3", "4", "5", "20"],
+                        correct: 2
+                    },
+                    {
+                        question: "Melyek egyenlő törtek? (Több helyes válasz is lehet!)",
+                        options: ["<span class='fraction'><span class='num'>2</span><span class='den'>4</span></span> és <span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>3</span><span class='den'>6</span></span> és <span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>3</span></span> és <span class='fraction'><span class='num'>2</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>4</span></span> és <span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>"],
+                        correct: [0, 1, 2]
+                    }
+                ]
+            },
+            {
+                number: "5.3",
+                title: "Összeadás és kivonás",
+                content: `
+                    <div class="content-section">
+                        <h3>✅ Azonos nevezőjű törtek</h3>
+                        <p>Ha a nevezők <strong>egyformák</strong>, egyszerűen csak a számlálókat adjuk össze!</p>
+                        
+                        <div class="example-box">
+                            <p style="text-align: center; font-size: 1.3em; margin: 20px 0;">
+                                <span class="fraction"><span class="num">2</span><span class="den">5</span></span>
+                                + 
+                                <span class="fraction"><span class="num">1</span><span class="den">5</span></span>
+                                = 
+                                <span class="fraction"><span class="num">3</span><span class="den">5</span></span>
+                            </p>
+                            <p style="text-align: center; color: #666;">A nevező ugyanaz marad (5), a számlálókat adjuk össze (2+1=3)</p>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px;">🔄 Különböző nevezőjű törtek</h3>
+                        <p>Ha a nevezők <strong>különbözőek</strong>, először közös nevezőre kell hoznunk őket!</p>
+                        
+                        <div class="example-box">
+                            <p><strong>Példa:</strong> <span class="fraction"><span class="num">1</span><span class="den">2</span></span> + <span class="fraction"><span class="num">1</span><span class="den">3</span></span></p>
+                            <p><strong>1. lépés:</strong> Közös nevező: 6</p>
+                            <p><strong>2. lépés:</strong> <span class="fraction"><span class="num">1</span><span class="den">2</span></span> = <span class="fraction"><span class="num">3</span><span class="den">6</span></span> és <span class="fraction"><span class="num">1</span><span class="den">3</span></span> = <span class="fraction"><span class="num">2</span><span class="den">6</span></span></p>
+                            <p><strong>3. lépés:</strong> <span class="fraction"><span class="num">3</span><span class="den">6</span></span> + <span class="fraction"><span class="num">2</span><span class="den">6</span></span> = <span class="fraction"><span class="num">5</span><span class="den">6</span></span></p>
+                        </div>
+                        
+                        <div class="tip-box">
+                            A közös nevezőt úgy találjuk meg, hogy keressük a két nevező legkisebb közös többszörösét!
+                        </div>
+                    </div>
+                `,
+                quiz: [
+                    {
+                        question: "Mi történik az azonos nevezőjű törtek összeadásakor?",
+                        options: ["A számlálókat adjuk össze", "A nevezőket adjuk össze", "Mindkettőt összeadjuk", "Csak szorozzuk őket"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>3</span><span class='den'>7</span></span> + <span class='fraction'><span class='num'>2</span><span class='den'>7</span></span> = ?",
+                        options: ["<span class='fraction'><span class='num'>5</span><span class='den'>7</span></span>", "<span class='fraction'><span class='num'>5</span><span class='den'>14</span></span>", "<span class='fraction'><span class='num'>6</span><span class='den'>7</span></span>", "<span class='fraction'><span class='num'>3</span><span class='den'>7</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mi az első lépés különböző nevezőjű törtek összeadásakor?",
+                        options: ["Összeadjuk a számlálókat", "Közös nevezőre hozás", "Egyszerűsítés", "Szorzás"],
+                        correct: 1
+                    },
+                    {
+                        question: "Mi a legkisebb közös többszöröse a 2-nek és 3-nak?",
+                        options: ["5", "6", "12", "2"],
+                        correct: 1
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>1</span><span class='den'>4</span></span> + <span class='fraction'><span class='num'>1</span><span class='den'>4</span></span> = ?",
+                        options: ["<span class='fraction'><span class='num'>2</span><span class='den'>4</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>8</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>8</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>5</span><span class='den'>6</span></span> - <span class='fraction'><span class='num'>1</span><span class='den'>6</span></span> = ?",
+                        options: ["<span class='fraction'><span class='num'>4</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>6</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>4</span><span class='den'>0</span></span>", "<span class='fraction'><span class='num'>5</span><span class='den'>5</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "Ha <span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>-t 6-os nevezőre bővítjük, mi lesz a számláló?",
+                        options: ["1", "2", "3", "6"],
+                        correct: 2
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>1</span><span class='den'>3</span></span> + <span class='fraction'><span class='num'>1</span><span class='den'>6</span></span> = ? (közös nevező: 6)",
+                        options: ["<span class='fraction'><span class='num'>2</span><span class='den'>9</span></span>", "<span class='fraction'><span class='num'>3</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>"],
+                        correct: 1
+                    },
+                    {
+                        question: "Mi marad, ha <span class='fraction'><span class='num'>7</span><span class='den'>8</span></span> - <span class='fraction'><span class='num'>3</span><span class='den'>8</span></span>?",
+                        options: ["<span class='fraction'><span class='num'>4</span><span class='den'>8</span></span>", "<span class='fraction'><span class='num'>10</span><span class='den'>8</span></span>", "<span class='fraction'><span class='num'>4</span><span class='den'>0</span></span>", "<span class='fraction'><span class='num'>7</span><span class='den'>3</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "A közös nevező keresésénél mi a cél?",
+                        options: ["A legnagyobb szám", "A legkisebb közös többszörös", "A legnagyobb közös osztó", "Bármelyik szám"],
+                        correct: 1
+                    }
+                ]
+            },
+            {
+                number: "5.4",
+                title: "Szorzás törtekkel",
+                content: `
+                    <div class="content-section">
+                        <h3>✖️ Tört × Tört</h3>
+                        <p>A törtek szorzása <strong>EGYSZERŰ</strong>! Csak szorozzuk össze a számlálókat, majd a nevezőket!</p>
+                        
+                        <div class="example-box">
+                            <p><strong>Példa:</strong> <span class="fraction"><span class="num">2</span><span class="den">3</span></span> × <span class="fraction"><span class="num">3</span><span class="den">4</span></span></p>
+                            <p><strong>1. lépés:</strong> Számlálók szorzása: 2 × 3 = 6</p>
+                            <p><strong>2. lépés:</strong> Nevezők szorzása: 3 × 4 = 12</p>
+                            <p><strong>3. lépés:</strong> Eredmény: <span class="fraction"><span class="num">6</span><span class="den">12</span></span></p>
+                            <p><strong>4. lépés:</strong> Egyszerűsítés: <span class="fraction"><span class="num">6</span><span class="den">12</span></span> = <span class="fraction"><span class="num">1</span><span class="den">2</span></span></p>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px;">✖️ Egész szám × Tört</h3>
+                        <p>Az egész számot tört alakban írjuk fel (pl. 2 = <span class="fraction"><span class="num">2</span><span class="den">1</span></span>), aztán úgy szorozzuk!</p>
+                        
+                        <div class="example-box">
+                            <p style="text-align: center; font-size: 1.3em; margin: 20px 0;">
+                                2 × <span class="fraction"><span class="num">3</span><span class="den">5</span></span>
+                                = 
+                                <span class="fraction"><span class="num">2</span><span class="den">1</span></span>
+                                × 
+                                <span class="fraction"><span class="num">3</span><span class="den">5</span></span>
+                                = 
+                                <span class="fraction"><span class="num">6</span><span class="den">5</span></span>
+                            </p>
+                        </div>
+                        
+                        <div class="tip-box">
+                            PROFI TRÜKK: Egyszerűsíthetsz már a szorzás ELŐTT is! Ha látod, hogy számok kiesnek, akkor könnyebb lesz a számolás.
+                        </div>
+                    </div>
+                `,
+                quiz: [
+                    {
+                        question: "Mit szorzunk össze először törtek szorzásakor?",
+                        options: ["Számlálókat", "Nevezőket", "Keresztbe szorozzuk", "Először bővítünk"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span> × <span class='fraction'><span class='num'>1</span><span class='den'>3</span></span> = ?",
+                        options: ["<span class='fraction'><span class='num'>1</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>6</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "3 × <span class='fraction'><span class='num'>2</span><span class='den'>5</span></span> = ?",
+                        options: ["<span class='fraction'><span class='num'>5</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>6</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>3</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>15</span></span>"],
+                        correct: 1
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>2</span><span class='den'>3</span></span> × <span class='fraction'><span class='num'>3</span><span class='den'>4</span></span> szorzásakor mi lesz a számláló?",
+                        options: ["5", "6", "7", "12"],
+                        correct: 1
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>2</span><span class='den'>3</span></span> × <span class='fraction'><span class='num'>3</span><span class='den'>4</span></span> szorzásakor mi lesz a nevező?",
+                        options: ["7", "12", "6", "4"],
+                        correct: 1
+                    },
+                    {
+                        question: "Hogyan írjuk fel a 5-öt tört alakban?",
+                        options: ["<span class='fraction'><span class='num'>5</span><span class='den'>1</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>5</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>10</span><span class='den'>2</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>4</span><span class='den'>5</span></span> × <span class='fraction'><span class='num'>5</span><span class='den'>6</span></span> = ? (egyszerűsítve)",
+                        options: ["<span class='fraction'><span class='num'>20</span><span class='den'>30</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>3</span></span>", "<span class='fraction'><span class='num'>4</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>"],
+                        correct: 1
+                    },
+                    {
+                        question: "Mi az eredménye: <span class='fraction'><span class='num'>1</span><span class='den'>4</span></span> × <span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>?",
+                        options: ["<span class='fraction'><span class='num'>1</span><span class='den'>16</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>8</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>8</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "6 × <span class='fraction'><span class='num'>1</span><span class='den'>3</span></span> = ?",
+                        options: ["<span class='fraction'><span class='num'>6</span><span class='den'>3</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>18</span></span>", "<span class='fraction'><span class='num'>7</span><span class='den'>3</span></span>", "2"],
+                        correct: 3
+                    },
+                    {
+                        question: "Mikor egyszerűsítünk a szorzásnál?",
+                        options: ["Előtte és utána is lehet", "Csak előtte", "Csak utána", "Sosem"],
+                        correct: 0
+                    }
+                ]
+            },
+            {
+                number: "5.5",
+                title: "Osztás törtekkel",
+                content: `
+                    <div class="content-section">
+                        <h3>🔄 A reciprok fogalma</h3>
+                        <p>A tört <strong>reciproka</strong>: ha megcseréljük a számlálót és a nevezőt.</p>
+                        
+                        <div class="example-box">
+                            <p><span class="fraction"><span class="num">2</span><span class="den">3</span></span> reciproka = <span class="fraction"><span class="num">3</span><span class="den">2</span></span></p>
+                            <p><span class="fraction"><span class="num">5</span><span class="den">7</span></span> reciproka = <span class="fraction"><span class="num">7</span><span class="den">5</span></span></p>
+                            <p>4 reciproka = <span class="fraction"><span class="num">1</span><span class="den">4</span></span> (mert 4 = <span class="fraction"><span class="num">4</span><span class="den">1</span></span>)</p>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px;">➗ Osztás = Szorzás a reciprokkal</h3>
+                        <p><strong>ARANY SZABÁLY:</strong> Törtel osztani = a reciprokával szorozni!</p>
+                        
+                        <div class="example-box">
+                            <p><strong>Példa:</strong> <span class="fraction"><span class="num">2</span><span class="den">3</span></span> ÷ <span class="fraction"><span class="num">4</span><span class="den">5</span></span></p>
+                            <p><strong>1. lépés:</strong> <span class="fraction"><span class="num">4</span><span class="den">5</span></span> reciproka = <span class="fraction"><span class="num">5</span><span class="den">4</span></span></p>
+                            <p><strong>2. lépés:</strong> <span class="fraction"><span class="num">2</span><span class="den">3</span></span> × <span class="fraction"><span class="num">5</span><span class="den">4</span></span> = <span class="fraction"><span class="num">10</span><span class="den">12</span></span></p>
+                            <p><strong>3. lépés:</strong> Egyszerűsítés: <span class="fraction"><span class="num">10</span><span class="den">12</span></span> = <span class="fraction"><span class="num">5</span><span class="den">6</span></span></p>
+                        </div>
+                        
+                        <div class="tip-box">
+                            A reciprok mindig olyan, hogy ha összeszorozzuk az eredetivel, 1-et kapunk! Pl: <span class="fraction"><span class="num">2</span><span class="den">3</span></span> × <span class="fraction"><span class="num">3</span><span class="den">2</span></span> = 1
+                        </div>
+                    </div>
+                `,
+                quiz: [
+                    {
+                        question: "Mi a reciprok?",
+                        options: ["Megcseréljük a számlálót és nevezőt", "Megszorozzuk 2-vel", "Elosztjuk 2-vel", "Összeadjuk őket"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mi a <span class='fraction'><span class='num'>3</span><span class='den'>4</span></span> reciproka?",
+                        options: ["<span class='fraction'><span class='num'>4</span><span class='den'>3</span></span>", "<span class='fraction'><span class='num'>3</span><span class='den'>4</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>", "3"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mi az 5 reciproka?",
+                        options: ["5", "<span class='fraction'><span class='num'>1</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>5</span><span class='den'>1</span></span>", "0"],
+                        correct: 1
+                    },
+                    {
+                        question: "Hogyan osztunk törtekkel?",
+                        options: ["Szorozzuk a reciprokával", "Egyszerűen elosztjuk", "Összeadjuk őket", "Bővítünk"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span> ÷ <span class='fraction'><span class='num'>1</span><span class='den'>3</span></span> = ?",
+                        options: ["<span class='fraction'><span class='num'>3</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>6</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>3</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>5</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mi történik, ha egy törtet a reciprokával szorzunk?",
+                        options: ["1-et kapunk", "0-t kapunk", "Ugyanazt a törtet kapjuk", "2-t kapunk"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>3</span><span class='den'>4</span></span> ÷ 2 = ?",
+                        options: ["<span class='fraction'><span class='num'>3</span><span class='den'>8</span></span>", "<span class='fraction'><span class='num'>6</span><span class='den'>4</span></span>", "<span class='fraction'><span class='num'>3</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>5</span><span class='den'>4</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "6 ÷ <span class='fraction'><span class='num'>2</span><span class='den'>3</span></span> = ?",
+                        options: ["9", "4", "12", "3"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mi a <span class='fraction'><span class='num'>1</span><span class='den'>5</span></span> reciproka?",
+                        options: ["<span class='fraction'><span class='num'>5</span><span class='den'>1</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>5</span></span>", "5", "<span class='fraction'><span class='num'>-1</span><span class='den'>5</span></span>"],
+                        correct: [0, 2]
+                    },
+                    {
+                        question: "Melyik műveletet cseréljük szorzásra osztáskor?",
+                        options: ["Az osztást", "A szorzást", "Az összeadást", "A kivonást"],
+                        correct: 0
+                    }
+                ]
+            },
+            {
+                number: "5.6",
+                title: "Vegyes törtek",
+                content: `
+                    <div class="content-section">
+                        <h3>🔢 Mi az a vegyes tört?</h3>
+                        <p>A vegyes tört egy <strong>egész szám + egy közönséges tört</strong>. Például: 2 <span class="fraction"><span class="num">1</span><span class="den">3</span></span></p>
+                        
+                        <div class="visual">
+                            <p><strong>Vizuálisan: 2 <span class="fraction"><span class="num">1</span><span class="den">3</span></span></strong></p>
+                            <p>= 2 egész pizza + <span class="fraction"><span class="num">1</span><span class="den">3</span></span> pizza</p>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px;">🔄 Vegyes tört → Közönséges tört</h3>
+                        <div class="example-box">
+                            <p><strong>Példa:</strong> 2 <span class="fraction"><span class="num">1</span><span class="den">3</span></span> = ?</p>
+                            <p><strong>1. lépés:</strong> 2 × 3 = 6</p>
+                            <p><strong>2. lépés:</strong> 6 + 1 = 7</p>
+                            <p><strong>3. lépés:</strong> 2 <span class="fraction"><span class="num">1</span><span class="den">3</span></span> = <span class="fraction"><span class="num">7</span><span class="den">3</span></span></p>
+                            <p style="margin-top: 10px;"><strong>Képlet:</strong> (egész × nevező + számláló) / nevező</p>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px;">🔄 Közönséges tört → Vegyes tört</h3>
+                        <div class="example-box">
+                            <p><strong>Példa:</strong> <span class="fraction"><span class="num">13</span><span class="den">6</span></span> = ?</p>
+                            <p><strong>1. lépés:</strong> 13 ÷ 6 = 2 maradék 1</p>
+                            <p><strong>2. lépés:</strong> Egész rész: 2, törtrész: <span class="fraction"><span class="num">1</span><span class="den">6</span></span></p>
+                            <p><strong>3. lépés:</strong> <span class="fraction"><span class="num">13</span><span class="den">6</span></span> = 2 <span class="fraction"><span class="num">1</span><span class="den">6</span></span></p>
+                        </div>
+                    </div>
+                `,
+                quiz: [
+                    {
+                        question: "Mi az a vegyes tört?",
+                        options: ["Egész szám + tört", "Két tört összege", "Tört × egész", "Csak tört"],
+                        correct: 0
+                    },
+                    {
+                        question: "1 <span class='fraction'><span class='num'>1</span><span class='den'>2</span></span> = ?",
+                        options: ["<span class='fraction'><span class='num'>3</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>1</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "3 <span class='fraction'><span class='num'>2</span><span class='den'>5</span></span> = ?",
+                        options: ["<span class='fraction'><span class='num'>17</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>15</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>11</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>5</span><span class='den'>5</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>7</span><span class='den'>3</span></span> vegyes törtként:",
+                        options: ["2 <span class='fraction'><span class='num'>1</span><span class='den'>3</span></span>", "1 <span class='fraction'><span class='num'>4</span><span class='den'>3</span></span>", "3 <span class='fraction'><span class='num'>1</span><span class='den'>3</span></span>", "7"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>11</span><span class='den'>4</span></span> = ?",
+                        options: ["2 <span class='fraction'><span class='num'>3</span><span class='den'>4</span></span>", "3 <span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>", "2 <span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>", "11"],
+                        correct: 0
+                    },
+                    {
+                        question: "5 <span class='fraction'><span class='num'>1</span><span class='den'>3</span></span> átváltásakor mi lesz a számláló?",
+                        options: ["15", "16", "5", "6"],
+                        correct: 1
+                    },
+                    {
+                        question: "Hogyan számoljuk ki 4 <span class='fraction'><span class='num'>2</span><span class='den'>7</span></span> törtalakját?",
+                        options: ["4×7+2 = 30, így <span class='fraction'><span class='num'>30</span><span class='den'>7</span></span>", "4+2 = 6", "4×2 = 8", "7×2+4 = 18"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mennyi az egész rész, ha <span class='fraction'><span class='num'>15</span><span class='den'>4</span></span>-et vegyes törtre váltjuk?",
+                        options: ["3", "4", "15", "2"],
+                        correct: 0
+                    },
+                    {
+                        question: "Mi a törtrész számlálója, ha <span class='fraction'><span class='num'>15</span><span class='den'>4</span></span>-et vegyes törtre váltjuk?",
+                        options: ["3", "1", "2", "0"],
+                        correct: 0
+                    },
+                    {
+                        question: "2 <span class='fraction'><span class='num'>3</span><span class='den'>4</span></span> + 1 <span class='fraction'><span class='num'>1</span><span class='den'>4</span></span> = ?",
+                        options: ["4", "3 <span class='fraction'><span class='num'>4</span><span class='den'>4</span></span>", "3", "3 <span class='fraction'><span class='num'>2</span><span class='den'>4</span></span>"],
+                        correct: 0
+                    }
+                ]
+            },
+            {
+                number: "5.7",
+                title: "Törtek és tizedesek",
+                content: `
+                    <div class="content-section">
+                        <h3>🔄 Tört → Tizedes</h3>
+                        <p>Egyszerűen osszuk el a számlálót a nevezővel!</p>
+                        
+                        <div class="example-box">
+                            <p><span class="fraction"><span class="num">1</span><span class="den">4</span></span> = 1 ÷ 4 = <strong>0,25</strong></p>
+                            <p><span class="fraction"><span class="num">3</span><span class="den">4</span></span> = 3 ÷ 4 = <strong>0,75</strong></p>
+                            <p><span class="fraction"><span class="num">1</span><span class="den">2</span></span> = 1 ÷ 2 = <strong>0,5</strong></p>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px;">🔄 Tizedes → Tört</h3>
+                        <div class="example-box">
+                            <p><strong>Példa:</strong> 0,25 = ?</p>
+                            <p><strong>1. lépés:</strong> 0,25 = <span class="fraction"><span class="num">25</span><span class="den">100</span></span> (két tizedesjegy → 100)</p>
+                            <p><strong>2. lépés:</strong> Egyszerűsítés: <span class="fraction"><span class="num">25</span><span class="den">100</span></span> = <span class="fraction"><span class="num">1</span><span class="den">4</span></span></p>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px;">📊 Hasznos átváltások</h3>
+                        <div class="example-box">
+                            <p><span class="fraction"><span class="num">1</span><span class="den">2</span></span> = 0,5 = 50%</p>
+                            <p><span class="fraction"><span class="num">1</span><span class="den">4</span></span> = 0,25 = 25%</p>
+                            <p><span class="fraction"><span class="num">3</span><span class="den">4</span></span> = 0,75 = 75%</p>
+                            <p><span class="fraction"><span class="num">1</span><span class="den">5</span></span> = 0,2 = 20%</p>
+                            <p><span class="fraction"><span class="num">1</span><span class="den">10</span></span> = 0,1 = 10%</p>
+                        </div>
+                        
+                        <div class="tip-box">
+                            Néhány tört végtelen tizedest ad (pl. <span class="fraction"><span class="num">1</span><span class="den">3</span></span> = 0,333...). Ilyenkor kerekítünk!
+                        </div>
+                    </div>
+                `,
+                quiz: [
+                    {
+                        question: "<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span> = ? (tizedes)",
+                        options: ["0,5", "0,2", "2", "0,25"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>1</span><span class='den'>4</span></span> = ? (tizedes)",
+                        options: ["0,25", "0,5", "0,75", "4"],
+                        correct: 0
+                    },
+                    {
+                        question: "0,75 = ? (tört)",
+                        options: ["<span class='fraction'><span class='num'>3</span><span class='den'>4</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>", "<span class='fraction'><span class='num'>75</span><span class='den'>10</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "0,2 = ? (tört - több helyes válasz is lehet!)",
+                        options: ["<span class='fraction'><span class='num'>1</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>2</span><span class='den'>10</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>20</span><span class='den'>100</span></span>"],
+                        correct: [0, 1, 3]
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>3</span><span class='den'>4</span></span> hány százalék?",
+                        options: ["75%", "25%", "50%", "34%"],
+                        correct: 0
+                    },
+                    {
+                        question: "50% = ?",
+                        options: ["<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>", "50", "<span class='fraction'><span class='num'>5</span><span class='den'>10</span></span>"],
+                        correct: 0
+                    },
+                    {
+                        question: "0,1 = ?",
+                        options: ["<span class='fraction'><span class='num'>1</span><span class='den'>10</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>100</span></span>", "<span class='fraction'><span class='num'>10</span><span class='den'>1</span></span>", "0"],
+                        correct: 0
+                    },
+                    {
+                        question: "<span class='fraction'><span class='num'>1</span><span class='den'>3</span></span> milyen tizedes?",
+                        options: ["0,333... (végtelen)", "0,3", "0,13", "3"],
+                        correct: 0
+                    },
+                    {
+                        question: "0,5 = ? (százalék)",
+                        options: ["50%", "5%", "0,5%", "25%"],
+                        correct: 0
+                    },
+                    {
+                        question: "25% = ? (tizedes)",
+                        options: ["0,25", "0,5", "2,5", "25"],
+                        correct: 0
+                    }
+                ]
+            },
+            {
+                number: "5.8",
+                title: "Szöveges feladatok",
+                content: `
+                    <div class="content-section">
+                        <h3>📖 Hogyan oldjunk meg szöveges feladatokat?</h3>
+                        
+                        <div class="example-box">
+                            <p><strong>1. lépés:</strong> Olvasd el figyelmesen!</p>
+                            <p><strong>2. lépés:</strong> Rajzolj ábrát, ha lehet!</p>
+                            <p><strong>3. lépés:</strong> Döntsd el, milyen műveletre van szükség!</p>
+                            <p><strong>4. lépés:</strong> Számold ki!</p>
+                            <p><strong>5. lépés:</strong> Ellenőrizd az eredményt!</p>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px;">📝 Példafeladatok</h3>
+                        
+                        <div class="example-box">
+                            <p><strong>🍰 Példa 1:</strong> Egy tortának az <span class="fraction"><span class="num">1</span><span class="den">4</span></span>-ét megettük. Mennyi maradt?</p>
+                            <p><strong>Megoldás:</strong></p>
+                            <p>1 − <span class="fraction"><span class="num">1</span><span class="den">4</span></span> = <span class="fraction"><span class="num">4</span><span class="den">4</span></span> − <span class="fraction"><span class="num">1</span><span class="den">4</span></span> = <span class="fraction"><span class="num">3</span><span class="den">4</span></span></p>
+                            <p><strong>Válasz:</strong> A torta <span class="fraction"><span class="num">3</span><span class="den">4</span></span>-e maradt.</p>
+                        </div>
+                        
+                        <div class="example-box">
+                            <p><strong>🍕 Példa 2:</strong> Peti megevett <span class="fraction"><span class="num">1</span><span class="den">8</span></span> pizzát, Kata <span class="fraction"><span class="num">1</span><span class="den">4</span></span> pizzát. Együtt mennyit ettek?</p>
+                            <p><strong>Megoldás:</strong></p>
+                            <p><span class="fraction"><span class="num">1</span><span class="den">4</span></span> = <span class="fraction"><span class="num">2</span><span class="den">8</span></span> (közös nevező)</p>
+                            <p><span class="fraction"><span class="num">1</span><span class="den">8</span></span> + <span class="fraction"><span class="num">2</span><span class="den">8</span></span> = <span class="fraction"><span class="num">3</span><span class="den">8</span></span></p>
+                            <p><strong>Válasz:</strong> Együtt <span class="fraction"><span class="num">3</span><span class="den">8</span></span> pizzát ettek.</p>
+                        </div>
+                        
+                        <div class="tip-box">
+                            Mindig gondold végig: Összeadás? Kivonás? Szorzás? Osztás? Ez a legfontosabb lépés!
+                        </div>
+                    </div>
+                `,
+                quiz: [
+                    {
+                        question: "Egy csoki 12 darabos. Megettük <span class='fraction'><span class='num'>1</span><span class='den'>3</span></span>-át. Hány darab maradt?",
+                        options: ["8 darab", "4 darab", "6 darab", "9 darab"],
+                        correct: 0
+                    },
+                    {
+                        question: "Anna naponta <span class='fraction'><span class='num'>2</span><span class='den'>3</span></span> km-t fut. Mennyi az 3 nap alatt?",
+                        options: ["2 km", "1 km", "<span class='fraction'><span class='num'>2</span><span class='den'>9</span></span> km", "6 km"],
+                        correct: 0
+                    },
+                    {
+                        question: "Egy torta <span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>-ét megettük. Mennyi a maradék?",
+                        options: ["<span class='fraction'><span class='num'>1</span><span class='den'>2</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>", "0", "1"],
+                        correct: 0
+                    },
+                    {
+                        question: "6 alma <span class='fraction'><span class='num'>1</span><span class='den'>3</span></span>-a hány alma?",
+                        options: ["2 alma", "3 alma", "1 alma", "6 alma"],
+                        correct: 0
+                    },
+                    {
+                        question: "Egy út <span class='fraction'><span class='num'>3</span><span class='den'>4</span></span>-ét megtettük. Az út 12 km. Hány km-t tettünk meg?",
+                        options: ["9 km", "3 km", "6 km", "12 km"],
+                        correct: 0
+                    },
+                    {
+                        question: "Péter <span class='fraction'><span class='num'>1</span><span class='den'>5</span></span>-öt, Kata <span class='fraction'><span class='num'>2</span><span class='den'>5</span></span>-öt evett. Mennyi maradt?",
+                        options: ["<span class='fraction'><span class='num'>2</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>3</span><span class='den'>5</span></span>", "<span class='fraction'><span class='num'>1</span><span class='den'>5</span></span>", "0"],
+                        correct: 0
+                    },
+                    {
+                        question: "Egy recepthez <span class='fraction'><span class='num'>3</span><span class='den'>4</span></span> kg liszt kell. 3 recepthez mennyi?",
+                        options: ["2 <span class='fraction'><span class='num'>1</span><span class='den'>4</span></span> kg", "3 kg", "<span class='fraction'><span class='num'>3</span><span class='den'>4</span></span> kg", "1 kg"],
+                        correct: 0
+                    },
+                    {
+                        question: "20 diák <span class='fraction'><span class='num'>1</span><span class='den'>4</span></span>-e hány diák?",
+                        options: ["5 diák", "4 diák", "10 diák", "15 diák"],
+                        correct: 0
+                    },
+                    {
+                        question: "Egy könyv 240 oldalas. <span class='fraction'><span class='num'>1</span><span class='den'>3</span></span>-át elolvastam. Hány oldalt?",
+                        options: ["80 oldal", "120 oldal", "160 oldal", "240 oldal"],
+                        correct: 0
+                    },
+                    {
+                        question: "Egy tartály <span class='fraction'><span class='num'>3</span><span class='den'>4</span></span>-e tele van. Ez 45 liter. Mennyi az egész?",
+                        options: ["60 liter", "45 liter", "30 liter", "90 liter"],
+                        correct: 0
+                    }
+                ]
+            }
+        ];
+        
+        let totalPages = chapters.length * 2; // Fejezet + teszt minden fejezethez
+        
+        function renderPage() {
+            const content = document.getElementById('content');
+            const chapterIndex = Math.floor(currentPage / 2);
+            const isQuiz = currentPage % 2 === 1;
+            
+            if (isQuiz) {
+                content.innerHTML = renderQuiz(chapterIndex);
+            } else {
+                content.innerHTML = renderChapter(chapterIndex);
+            }
+            
+            updateNavigation();
+            updateProgress();
+        }
+        
+        function renderChapter(index) {
+            const chapter = chapters[index];
+            return `
+                <div class="chapter active">
+                    <div class="chapter-title">
+                        <div class="chapter-number">${chapter.number}</div>
+                        <div>${chapter.title}</div>
+                    </div>
+                    ${chapter.content}
+                </div>
+            `;
+        }
+        
+        function renderQuiz(chapterIndex) {
+            const chapter = chapters[chapterIndex];
+            let html = `
+                <div class="quiz active">
+                    <div class="quiz-title">📝 Teszt: ${chapter.number} - ${chapter.title}</div>
+            `;
+            
+            chapter.quiz.forEach((q, i) => {
+                const isMulti = Array.isArray(q.correct);
+                html += `
+                    <div class="question" id="q${chapterIndex}_${i}">
+                        <div class="question-text">${i + 1}. ${q.question} ${isMulti ? '<span style="color: #e67e22; font-size: 0.9em;">(Több helyes válasz is lehet!)</span>' : ''}</div>
+                        <div class="options">
+                `;
+                
+                q.options.forEach((opt, optIndex) => {
+                    html += `
+                        <div class="option" onclick="selectAnswer(${chapterIndex}, ${i}, ${optIndex}, ${isMulti})">
+                            ${opt}
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                        <div class="feedback" id="feedback${chapterIndex}_${i}"></div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <button class="btn btn-submit" onclick="submitQuiz(${chapterIndex})">Értékelés</button>
+                <div class="quiz-result" id="quizResult${chapterIndex}">
+                    <h2>Eredmény</h2>
+                    <div class="score" id="score${chapterIndex}"></div>
+                    <p id="message${chapterIndex}"></p>
+                </div>
+            </div>
+            `;
+            
+            return html;
+        }
+        
+        function selectAnswer(chapterIndex, questionIndex, optionIndex, isMulti) {
+            const questionId = `q${chapterIndex}_${questionIndex}`;
+            const options = document.querySelectorAll(`#${questionId} .option`);
+            
+            if (!quizAnswers[chapterIndex]) {
+                quizAnswers[chapterIndex] = {};
+            }
+            
+            if (isMulti) {
+                // Többválasztós
+                if (!Array.isArray(quizAnswers[chapterIndex][questionIndex])) {
+                    quizAnswers[chapterIndex][questionIndex] = [];
+                }
+                
+                const answerArray = quizAnswers[chapterIndex][questionIndex];
+                const index = answerArray.indexOf(optionIndex);
+                
+                if (index > -1) {
+                    // Már ki van választva, távolítsuk el
+                    answerArray.splice(index, 1);
+                    options[optionIndex].classList.remove('selected');
+                } else {
+                    // Új választás
+                    answerArray.push(optionIndex);
+                    options[optionIndex].classList.add('selected');
+                }
+            } else {
+                // Egyválasztós
+                options.forEach(opt => opt.classList.remove('selected'));
+                options[optionIndex].classList.add('selected');
+                quizAnswers[chapterIndex][questionIndex] = optionIndex;
+            }
+        }
+        
+        function submitQuiz(chapterIndex) {
+            const chapter = chapters[chapterIndex];
+            const answers = quizAnswers[chapterIndex] || {};
+            let correct = 0;
+            
+            chapter.quiz.forEach((q, i) => {
+                const questionId = `q${chapterIndex}_${i}`;
+                const options = document.querySelectorAll(`#${questionId} .option`);
+                const feedback = document.getElementById(`feedback${chapterIndex}_${i}`);
+                const userAnswer = answers[i];
+                const isMulti = Array.isArray(q.correct);
+                
+                let isCorrect = false;
+                
+                if (isMulti) {
+                    // Többválasztós kérdés
+                    const userAnswerArray = Array.isArray(userAnswer) ? userAnswer : [];
+                    const sortedUser = [...userAnswerArray].sort();
+                    const sortedCorrect = [...q.correct].sort();
+                    
+                    isCorrect = JSON.stringify(sortedUser) === JSON.stringify(sortedCorrect);
+                    
+                    options.forEach((opt, optIndex) => {
+                        opt.classList.remove('correct', 'incorrect');
+                        if (q.correct.includes(optIndex)) {
+                            opt.classList.add('correct');
+                        } else if (userAnswerArray.includes(optIndex)) {
+                            opt.classList.add('incorrect');
+                        }
+                    });
+                } else {
+                    // Egyválasztós kérdés
+                    isCorrect = userAnswer === q.correct;
+                    
+                    options.forEach((opt, optIndex) => {
+                        opt.classList.remove('correct', 'incorrect');
+                        if (optIndex === q.correct) {
+                            opt.classList.add('correct');
+                        } else if (optIndex === userAnswer && optIndex !== q.correct) {
+                            opt.classList.add('incorrect');
+                        }
+                    });
+                }
+                
+                if (isCorrect) {
+                    correct++;
+                    feedback.className = 'feedback show correct';
+                    feedback.textContent = '✓ Helyes válasz!';
+                } else {
+                    feedback.className = 'feedback show incorrect';
+                    if (isMulti) {
+                        const correctOptions = q.correct.map(idx => q.options[idx]).join(', ');
+                        feedback.textContent = '✗ Helyes válaszok: ' + correctOptions;
+                    } else {
+                        feedback.textContent = '✗ Helyes válasz: ' + q.options[q.correct];
+                    }
+                }
+            });
+            
+            const percentage = (correct / chapter.quiz.length) * 100;
+            const scoreElement = document.getElementById(`score${chapterIndex}`);
+            const messageElement = document.getElementById(`message${chapterIndex}`);
+            const resultElement = document.getElementById(`quizResult${chapterIndex}`);
+            
+            scoreElement.textContent = `${correct}/${chapter.quiz.length}`;
+            
+            if (percentage >= 90) {
+                scoreElement.className = 'score excellent';
+                messageElement.textContent = '🌟 Kiváló! Tökéletesen érted az anyagot!';
+            } else if (percentage >= 70) {
+                scoreElement.className = 'score good';
+                messageElement.textContent = '👍 Jó munka! Szép eredmény!';
+            } else if (percentage >= 50) {
+                scoreElement.className = 'score average';
+                messageElement.textContent = '📚 Közepes. Érdemes még gyakorolni!';
+            } else {
+                scoreElement.className = 'score poor';
+                messageElement.textContent = '💪 Gyakorolj még! Meg tudod csinálni!';
+            }
+            
+            resultElement.classList.add('show');
+        }
+        
+        function nextPage() {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                renderPage();
+                window.scrollTo(0, 0);
+            }
+        }
+        
+        function previousPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                renderPage();
+                window.scrollTo(0, 0);
+            }
+        }
+        
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            
+            prevBtn.disabled = currentPage === 0;
+            nextBtn.disabled = currentPage === totalPages - 1;
+            
+            if (currentPage === totalPages - 1) {
+                nextBtn.style.display = 'none';
+                restartBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'block';
+                restartBtn.style.display = 'none';
+            }
+        }
+        
+        function restartCourse() {
+            currentPage = 0;
+            quizAnswers = {};
+            renderPage();
+            window.scrollTo(0, 0);
+        }
+        
+        function updateProgress() {
+            const progress = ((currentPage + 1) / totalPages) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        // Initialize
+        renderPage();
+    </script>
+</body>
+</html>
